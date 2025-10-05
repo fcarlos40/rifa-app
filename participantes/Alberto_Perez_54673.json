@@ -1,0 +1,13 @@
+{
+    "nombre": "Alberto Perez",
+    "boleto": "54673",
+    "email": "fcarlosalberto189@gmail.com",
+    "telefono": "+543525615211",
+    "direccion": "Pio Leon 20",
+    "ciudad": "Jesus Maria",
+    "localidad": "Jesus Maria",
+    "fecha_registro": "2025-10-05T16:35:14.079419",
+    "estado_pago": "pendiente",
+    "id_pago": "54673",
+    "link_pago": "https://www.mercadopago.com.ar/"
+}
