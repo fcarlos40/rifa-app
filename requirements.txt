@@ -1,3 +1,4 @@
 streamlit==1.36.0
 beautifulsoup4==4.12.3
 requests==2.32.3
+twilio==9.1.0
