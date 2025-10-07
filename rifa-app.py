@@ -1493,4 +1493,5 @@ st.markdown(
     "Sistema de Rifa v2.0 - Desarrollado con Streamlit"
     "</div>",
     unsafe_allow_html=True
-)
+)#    
+ 
