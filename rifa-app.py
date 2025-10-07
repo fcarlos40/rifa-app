@@ -15,11 +15,9 @@ from streamlit_autorefresh import st_autorefresh
 import logging
 import pandas as pd
 import time
-
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 # ----------------------------
 # FUNCIONES DE PERSISTENCIA DE PREMIOS
 # ----------------------------
@@ -31,7 +29,6 @@ def guardar_premios(premios):
         logger.info("Premios guardados en premios.json")
     except Exception as e:
         logger.error(f"Error al guardar premios: {e}")
-
 def cargar_premios():
     """Carga los premios desde un archivo JSON o devuelve lista vacía"""
     if os.path.exists("premios.json"):
@@ -44,7 +41,6 @@ def cargar_premios():
             logger.error(f"Error al cargar premios: {e}")
             return []
     return []
-
 # ----------------------------
 # CONFIGURACIÓN MEJORADA
 # ----------------------------
@@ -80,10 +76,8 @@ def cargar_configuracion():
         config["MONTO_RIFA"] = 30000.0
         logger.warning("MONTO_RIFA inválido, usando valor por defecto: 30000.0")
     return config
-
 # Cargar configuración
 CONFIG = cargar_configuracion()
-
 # ----------------------------
 # CONSTANTES Y CONFIGURACIÓN
 # ----------------------------
@@ -102,36 +96,30 @@ ENLACE_PAGO_FALLBACK = CONFIG["ENLACE_PAGO_FALLBACK"]
 MONTO_RIFA = CONFIG["MONTO_RIFA"]
 RIFA_NOMBRE = CONFIG["RIFA_NOMBRE"]
 RIFA_DESCRIPCION = CONFIG["RIFA_DESCRIPCION"]
-
 # Carpetas para datos
 CARPETA_PARTICIPANTES = "participantes"
 CARPETA_BACKUPS = "backups"
 os.makedirs(CARPETA_PARTICIPANTES, exist_ok=True)
 os.makedirs(CARPETA_BACKUPS, exist_ok=True)
-
 # ----------------------------
 # FUNCIONES AUXILIARES MEJORADAS
 # ----------------------------
 def es_email_valido(email):
     """Valida formato de email"""
     return re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email)
-
 def es_telefono_valido(telefono):
     """Valida formato de teléfono internacional"""
     digits = re.sub(r"[^\d]", "", telefono)
     return len(digits) >= 7 and len(digits) <= 15 and digits.isdigit()
-
 def es_boleto_valido(boleto):
     """Valida que el boleto sea de 5 dígitos"""
     return re.fullmatch(r"\d{5}", boleto) is not None
-
 def normalizar_boleto(boleto):
     """Normaliza el número de boleto a 5 dígitos"""
     clean = re.sub(r"[^\d]", "", boleto)
     if clean.isdigit() and 1 <= len(clean) <= 5:
         return clean.zfill(5)
     return boleto
-
 def guardar_participante_archivo(participante):
     """Guarda participante en archivo JSON individual"""
     nombre_archivo = f"{participante['nombre'].replace(' ', '_')}_{participante['boleto']}.json"
@@ -143,7 +131,6 @@ def guardar_participante_archivo(participante):
     except Exception as e:
         logger.error(f"Error guardando participante {participante['nombre']}: {e}")
         return None
-
 def cargar_todos_participantes():
     """Carga todos los participantes desde archivos JSON"""
     participantes = []
@@ -157,7 +144,6 @@ def cargar_todos_participantes():
             except Exception as e:
                 logger.warning(f"Error al cargar {archivo}: {e}")
     return sorted(participantes, key=lambda x: x.get('fecha_registro', ''))
-
 def crear_enlace_pago_mercadopago(boleto, nombre, email, monto=MONTO_RIFA):
     """Crea un enlace de pago personalizado en Mercado Pago"""
     if not MP_ACCESS_TOKEN:
@@ -200,7 +186,6 @@ def crear_enlace_pago_mercadopago(boleto, nombre, email, monto=MONTO_RIFA):
     except Exception as e:
         logger.error(f"Excepción al crear enlace de pago: {e}")
         return ENLACE_PAGO_FALLBACK
-
 def procesar_webhook_mercadopago(datos_webhook):
     """Procesa notificaciones de webhook de Mercado Pago"""
     try:
@@ -240,7 +225,6 @@ def procesar_webhook_mercadopago(datos_webhook):
     except Exception as e:
         logger.error(f"Error en webhook: {e}")
         return False, str(e)
-
 def crear_backup_automatico():
     """Crea backup automático de los datos"""
     try:
@@ -265,7 +249,6 @@ def crear_backup_automatico():
     except Exception as e:
         logger.error(f"Error en backup: {e}")
         return False
-
 def restaurar_backup(archivo_backup):
     """Restaura datos desde un backup"""
     try:
@@ -284,7 +267,6 @@ def restaurar_backup(archivo_backup):
     except Exception as e:
         logger.error(f"Error restaurando backup: {e}")
         return False
-
 def mostrar_estadisticas_avanzadas():
     """Muestra estadísticas detalladas de la rifa"""
     participantes = cargar_todos_participantes()
@@ -297,7 +279,6 @@ def mostrar_estadisticas_avanzadas():
     recaudacion_total = pagados * MONTO_RIFA
     recaudacion_potencial = total_participantes * MONTO_RIFA
     tasa_conversion = (pagados / total_participantes * 100) if total_participantes > 0 else 0
-
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Total Participantes", total_participantes)
@@ -307,7 +288,6 @@ def mostrar_estadisticas_avanzadas():
         st.metric("Por Pagar", pendientes)
     with col4:
         st.metric("Recaudación", f"${recaudacion_total:,.2f}")
-
     if total_participantes > 0:
         try:
             df = pd.DataFrame(participantes)
@@ -318,12 +298,10 @@ def mostrar_estadisticas_avanzadas():
                 st.line_chart(registros_por_dia)
             else:
                 st.info("No hay suficientes datos para mostrar la evolución")
-
             st.subheader("💰 Distribución por Estado de Pago")
             estado_counts = df['estado_pago'].value_counts()
             if not estado_counts.empty:
                 st.bar_chart(estado_counts)
-
             if 'ciudad' in df.columns and not df['ciudad'].empty:
                 st.subheader("🏙️ Top Ciudades")
                 ciudad_counts = df[df['ciudad'] != '']['ciudad'].value_counts().head(10)
@@ -331,7 +309,6 @@ def mostrar_estadisticas_avanzadas():
                     st.bar_chart(ciudad_counts)
         except Exception as e:
             st.warning(f"No se pudieron generar gráficos: {e}")
-
 def enviar_recordatorio_pago():
     """Envía recordatorios de pago a participantes pendientes"""
     participantes = cargar_todos_participantes()
@@ -403,7 +380,6 @@ Por favor, realiza el pago para confirmar tu participación.
             st.success(f"✅ Proceso completado. {len(resultados)} acciones realizadas")
             for resultado in resultados:
                 st.write(resultado)
-
 # ----------------------------
 # FUNCIONES DE NOTIFICACIÓN
 # ----------------------------
@@ -433,7 +409,6 @@ Pronto nos pondremos en contacto para coordinar la entrega.
     except Exception as e:
         logger.error(f"Error enviando email a {ganador['nombre']}: {e}")
         return False, str(e)
-
 def enviar_whatsapp_ganador(ganador, premio, mensaje_personalizado=None):
     if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN or not TWILIO_WHATSAPP_FROM:
         return False, "Twilio no configurado"
@@ -452,7 +427,6 @@ def enviar_whatsapp_ganador(ganador, premio, mensaje_personalizado=None):
     except Exception as e:
         logger.error(f"Error enviando WhatsApp a {ganador['nombre']}: {e}")
         return False, str(e)
-
 # ----------------------------
 # FUNCIONES DE EXPORTACIÓN
 # ----------------------------
@@ -467,7 +441,6 @@ def guardar_datos():
         "mensaje_email": st.session_state.mensaje_email,
         "mensaje_whatsapp": st.session_state.mensaje_whatsapp,
     }, indent=4, default=str, ensure_ascii=False)
-
 def cargar_datos(uploaded_file):
     try:
         data = json.load(uploaded_file)
@@ -486,7 +459,6 @@ def cargar_datos(uploaded_file):
     except Exception as e:
         st.error(f"❌ Error cargando datos: {e}")
         logger.error(f"Error cargando datos: {e}")
-
 def exportar_resultados_csv(historial=None):
     output = StringIO()
     writer = csv.writer(output)
@@ -509,7 +481,6 @@ def exportar_resultados_csv(historial=None):
                 g.get('fecha_registro', '')
             ])
     return output.getvalue()
-
 def exportar_participantes_csv():
     participantes = cargar_todos_participantes()
     output = StringIO()
@@ -529,7 +500,6 @@ def exportar_participantes_csv():
             p.get('fecha_pago', '')
         ])
     return output.getvalue()
-
 # ----------------------------
 # FUNCIONES DE SORTEO
 # ----------------------------
@@ -539,7 +509,6 @@ def get_next_draw_time():
     if now > draw_time:
         draw_time += timedelta(days=1)
     return draw_time
-
 @st.cache_data(ttl=300)
 def obtener_numero_nocturna():
     try:
@@ -569,7 +538,6 @@ def obtener_numero_nocturna():
     except Exception as e:
         logger.error(f"Error al obtener resultados oficiales: {e}")
         return None
-
 # ----------------------------
 # GESTIÓN MEJORADA DE PREMIOS (CON PERSISTENCIA)
 # ----------------------------
@@ -583,7 +551,6 @@ def gestionar_premios():
             st.metric("Estado", "✅ Activos")
         with col3:
             st.metric("Visibilidad", "🌐 Públicos")
-
     with st.form("form_gestion_premios"):
         st.subheader("➕ Agregar Nuevo Premio")
         col1, col2 = st.columns([3, 1])
@@ -623,7 +590,6 @@ def gestionar_premios():
                     st.rerun()
                 else:
                     st.warning("⚠️ El nombre del premio no puede estar vacío")
-
     if st.session_state.premios:
         st.subheader("📋 Lista de Premios Activos")
         st.info("💡 Estos premios se mostrarán automáticamente en el registro público")
@@ -713,7 +679,6 @@ def gestionar_premios():
                     guardar_premios(st.session_state.premios)  # ✅ Persistir
                     st.success(f"✅ Premio de ejemplo agregado: '{ejemplo}'")
                     st.rerun()
-
     if st.session_state.premios:
         st.markdown("---")
         st.subheader("👁️ Vista Previa - Registro Público")
@@ -737,7 +702,6 @@ def gestionar_premios():
                 </div>
                 """, unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-
 # ----------------------------
 # INICIALIZACIÓN DE SESIÓN (CON CARGA PERSISTENTE DE PREMIOS)
 # ----------------------------
@@ -761,7 +725,6 @@ if 'mensaje_email' not in st.session_state:
     st.session_state.mensaje_email = "¡Hola {nombre}!\n¡Felicidades! Has ganado el premio: **{premio}** en nuestra rifa.\nDetalles:\n- Boleto: {boleto}\n- Premio: {premio}\nPronto nos pondremos en contacto para coordinar la entrega.\n¡Gracias por participar!"
 if 'mensaje_whatsapp' not in st.session_state:
     st.session_state.mensaje_whatsapp = "🎉 ¡Felicidades, {nombre}! Ganaste: *{premio}* en la rifa. Boleto: {boleto}. Pronto te contactaremos."
-
 # ----------------------------
 # ESTILOS COMUNES
 # ----------------------------
@@ -803,14 +766,12 @@ contador_css = """
 }
 </style>
 """
-
 # ----------------------------
 # PÁGINA DE LOGIN
 # ----------------------------
 page = st.query_params.get("page", "admin")
 if isinstance(page, list):
     page = page[0]
-
 if not st.session_state.logueado and page not in ["registro", "resultados", "exito", "error"]:
     st.set_page_config(page_title="🔐 Login - Rifa", page_icon="🔑", layout="centered")
     st.markdown(contador_css, unsafe_allow_html=True)
@@ -834,7 +795,6 @@ if not st.session_state.logueado and page not in ["registro", "resultados", "exi
         st.markdown("¿Eres participante? [Regístrate aquí](?page=registro)")
         st.markdown("[Ver resultados](?page=resultados)")
     st.stop()
-
 # ----------------------------
 # PÁGINAS PÚBLICAS
 # ----------------------------
@@ -861,7 +821,6 @@ if page == "registro":
                 st.query_params.clear()
                 st.rerun()
         st.stop()
-
     st.set_page_config(page_title="🎟️ ¡Regístrate en la Rifa!", page_icon="📝", layout="centered")
     st_autorefresh(interval=1000, key="public_contador_refresh")
     premios_css = """
@@ -883,7 +842,6 @@ if page == "registro":
     st.title(f"🎟️ {RIFA_NOMBRE}")
     if RIFA_DESCRIPCION:
         st.markdown(f"*{RIFA_DESCRIPCION}*")
-
     # ✅ MOSTRAR PREMIOS DESDE SESIÓN (YA PERSISTENTES)
     if st.session_state.premios:
         st.markdown('<div class="premios-section">', unsafe_allow_html=True)
@@ -906,7 +864,6 @@ if page == "registro":
         st.markdown("¡Premios increíbles te esperan! Los detalles se revelarán pronto.")
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-
     next_draw = get_next_draw_time()
     now_arg = datetime.utcnow() - timedelta(hours=3)
     diff = next_draw - now_arg
@@ -925,7 +882,6 @@ if page == "registro":
         st.markdown('<div class="contador-box" style="background: linear-gradient(120deg, #ff9a9e 0%, #fad0c4 100%);">', unsafe_allow_html=True)
         st.markdown("### 🎉 ¡El sorteo ya se realizó hoy! Los resultados se publicarán pronto.")
         st.markdown('</div>', unsafe_allow_html=True)
-
     st.markdown("### 📝 Completa el formulario para participar:")
     with st.form("form_registro_publico"):
         col1, col2 = st.columns(2)
@@ -996,7 +952,6 @@ if page == "registro":
                     st.rerun()
                 else:
                     st.error("❌ Error al guardar el registro. Intenta nuevamente.")
-
     st.markdown("---")
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -1007,7 +962,6 @@ if page == "registro":
         st.markdown("[📋 Ver reglamento](#)", unsafe_allow_html=True)
     with col3:
         st.markdown("[🏆 Ver resultados](?page=resultados)", unsafe_allow_html=True)
-
 elif page == "resultados":
     st.set_page_config(page_title="🏆 Resultados del Sorteo", page_icon="🏅", layout="centered")
     resultados_css = """
@@ -1087,7 +1041,6 @@ elif page == "resultados":
         if st.button("🏠 Volver al inicio", use_container_width=True):
             st.query_params.clear()
             st.rerun()
-
 elif page == "exito":
     st.set_page_config(page_title="✅ Pago Exitoso", page_icon="🎉", layout="centered")
     st.title("✅ ¡Pago Confirmado!")
@@ -1101,7 +1054,6 @@ elif page == "exito":
     if st.button("🏠 Volver al inicio"):
         st.query_params.clear()
         st.rerun()
-
 elif page == "error":
     st.set_page_config(page_title="❌ Error en Pago", page_icon="⚠️", layout="centered")
     st.error("❌ Hubo un problema con tu pago")
@@ -1109,7 +1061,6 @@ elif page == "error":
     if st.button("🔄 Reintentar pago"):
         st.query_params.clear()
         st.rerun()
-
 # ----------------------------
 # PANEL DE ADMINISTRACIÓN
 # ----------------------------
@@ -1133,7 +1084,6 @@ else:
     }
     </style>
     """, unsafe_allow_html=True)
-
     col_logo, col_titulo, col_logout = st.columns([1, 3, 1])
     with col_logo:
         st.image("https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/325/crown_1f451.png", width=60)
@@ -1143,7 +1093,6 @@ else:
         if st.button("🚪 Cerrar Sesión", use_container_width=True):
             st.session_state.logueado = False
             st.rerun()
-
     base_url = st.get_option("server.baseUrlPath") or "http://localhost:8501"
     st.markdown(f"""
     **🔗 Enlaces importantes:**
@@ -1151,7 +1100,6 @@ else:
     - **Resultados públicos:** `{base_url}?page=resultados`
     - **Monto de la rifa:** `${MONTO_RIFA}`
     """)
-
     next_draw = get_next_draw_time()
     now_arg = datetime.utcnow() - timedelta(hours=3)
     diff = next_draw - now_arg
@@ -1170,7 +1118,6 @@ else:
         st.markdown('<div class="contador-box" style="background: linear-gradient(120deg, #ff9a9e 0%, #fad0c4 100%);">', unsafe_allow_html=True)
         st.markdown("### 🎉 ¡El sorteo ya se realizó hoy! Verifica los resultados oficiales.")
         st.markdown('</div>', unsafe_allow_html=True)
-
     with st.sidebar:
         st.header("📁 Gestión de Datos")
         st.download_button(
@@ -1205,10 +1152,8 @@ else:
             if st.button("🔄 Restaurar Backup", use_container_width=True):
                 if restaurar_backup(os.path.join(CARPETA_BACKUPS, selected_backup)):
                     st.rerun()
-
     with st.expander("📊 Estadísticas Avanzadas", expanded=True):
         mostrar_estadisticas_avanzadas()
-
     with st.expander("✉️ Mensajes de Notificación"):
         col1, col2 = st.columns(2)
         with col1:
@@ -1231,9 +1176,7 @@ else:
             st.session_state.mensaje_email = mensaje_email
             st.session_state.mensaje_whatsapp = mensaje_whatsapp
             st.success("✅ Mensajes actualizados")
-
     gestionar_premios()
-
     st.header("👥 Gestión de Participantes")
     with st.expander("👤 Registrar Participante Manualmente"):
         with st.form("form_manual"):
@@ -1279,7 +1222,6 @@ else:
                             st.rerun()
                         else:
                             st.error("❌ Error al guardar el participante.")
-
     participantes = cargar_todos_participantes()
     if participantes:
         st.subheader(f"📋 Lista de Participantes ({len(participantes)})")
@@ -1330,7 +1272,6 @@ else:
                     else:
                         st.button("✅ Pagado", key=f"paid_{p['boleto']}", disabled=True, use_container_width=True)
                 st.markdown("---")
-
     with st.expander("📤 Carga Masiva por CSV"):
         st.markdown("""
         **Formato del CSV requerido:**
@@ -1395,10 +1336,8 @@ else:
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Error procesando CSV: {e}")
-
     with st.expander("⏰ Recordatorios de Pago"):
         enviar_recordatorio_pago()
-
     st.header("🎲 Sistema de Sorteo")
     st.markdown("""
     La **Lotería de Córdoba Nocturna** se realiza **todos los días a las 21:30 hs** (hora Argentina).
@@ -1489,7 +1428,6 @@ else:
                 st.caption(f"Verificado el {st.session_state.ultimo_sorteo_verificado}")
         else:
             st.info("👉 Haz clic en 'Verificar resultados oficiales' después de las 21:30 hs.")
-
     if st.session_state.historial_sorteos:
         st.header("📜 Historial de Resultados")
         ultimo_sorteo = st.session_state.historial_sorteos[-1]
@@ -1515,7 +1453,6 @@ else:
             "text/csv",
             use_container_width=True
         )
-
     st.markdown("---")
     st.header("⚠️ Gestión de Riesgos")
     col1, col2 = st.columns(2)
@@ -1547,7 +1484,6 @@ else:
                         del st.session_state[key]
                     st.success("✅ Sistema reiniciado completamente.")
                     st.rerun()
-
 # ----------------------------
 # FOOTER
 # ----------------------------
